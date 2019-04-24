@@ -3,7 +3,8 @@ import { findNodeHandle } from 'react-native';
 import PropTypes from 'prop-types';
 import { Pulse } from './';
 
-const RCTUIManager = require('NativeModules').UIManager;
+var NativeModules = require('react-native').NativeModules;
+const RCTUIManager = NativeModules.UIManager;
 
 export class RNHotspot extends PureComponent {
     static propTypes = {
