@@ -1,20 +1,20 @@
-import React, { PureComponent } from "react";
-import { findNodeHandle, requireNativeComponent } from "react-native";
-import PropTypes from "prop-types";
-import { Pulse } from "./";
+import React, { PureComponent } from 'react';
+import { findNodeHandle, NativeModules } from 'react-native';
+import PropTypes from 'prop-types';
+import { Pulse } from './';
 
-const RCTUIManager = requireNativeComponent("UIManager");
+const RCTUIManager = NativeModules.UIManager;
 
 export class RNHotspot extends PureComponent {
   static propTypes = {
-    componentRefs: PropTypes.array.isRequired
+    componentRefs: PropTypes.array.isRequired,
   };
 
   constructor(props) {
     super(props);
 
     this.state = {
-      hotspots: null
+      hotspots: null,
     };
 
     this.onPress = this.onPress.bind(this);
@@ -27,7 +27,7 @@ export class RNHotspot extends PureComponent {
 
     setTimeout(() => {
       componentRefs.map(({ ref, onPress }) => {
-        RCTUIManager.measure(
+        RCTUIManager.measureLayout(
           findNodeHandle(ref.current),
           (x, y, width, height, pageX, pageY) => {
             hotspots.push({
@@ -35,14 +35,14 @@ export class RNHotspot extends PureComponent {
               height,
               pageX,
               pageY,
-              onPress
+              onPress,
             });
           }
         );
       });
       setTimeout(() => {
         this.setState({
-          hotspots
+          hotspots,
         });
       }, 1);
     });
@@ -57,7 +57,7 @@ export class RNHotspot extends PureComponent {
     newArr.splice(idx, 1);
 
     this.setState({
-      hotspots: newArr
+      hotspots: newArr,
     });
   }
 
@@ -70,6 +70,7 @@ export class RNHotspot extends PureComponent {
     }
 
     return hotspots.map(({ width, height, pageX, pageY }, idx) => {
+      console.log(`hotspots - { width, height, pageX, pageY }`, width, height, pageX, pageY)
       return (
         <Pulse
           key={idx}
