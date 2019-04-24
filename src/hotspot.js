@@ -1,85 +1,84 @@
-import React, { PureComponent } from 'react';
-import { findNodeHandle } from 'react-native';
-import PropTypes from 'prop-types';
-import { Pulse } from './';
+import React, { PureComponent } from "react";
+import { findNodeHandle, requireNativeComponent } from "react-native";
+import PropTypes from "prop-types";
+import { Pulse } from "./";
 
-var NativeModules = require('react-native').NativeModules;
-const RCTUIManager = NativeModules.UIManager;
+const RCTUIManager = requireNativeComponent("UIManager");
 
 export class RNHotspot extends PureComponent {
-    static propTypes = {
-        componentRefs: PropTypes.array.isRequired,
+  static propTypes = {
+    componentRefs: PropTypes.array.isRequired
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      hotspots: null
     };
 
-    constructor(props) {
-        super(props);
+    this.onPress = this.onPress.bind(this);
+  }
 
-        this.state = {
-            hotspots: null,
-        };
+  componentDidMount() {
+    const { componentRefs } = this.props;
 
-        this.onPress = this.onPress.bind(this);
-    }
+    const hotspots = [];
 
-    componentDidMount() {
-        const { componentRefs } = this.props;
-
-        const hotspots = [];
-
-        setTimeout(() => {
-            componentRefs.map(({ ref, onPress }) => {
-                RCTUIManager.measure(
-                    findNodeHandle(ref.current),
-                    (x, y, width, height, pageX, pageY) => {
-                        hotspots.push({
-                            width,
-                            height,
-                            pageX,
-                            pageY,
-                            onPress,
-                        });
-                    }
-                );
+    setTimeout(() => {
+      componentRefs.map(({ ref, onPress }) => {
+        RCTUIManager.measure(
+          findNodeHandle(ref.current),
+          (x, y, width, height, pageX, pageY) => {
+            hotspots.push({
+              width,
+              height,
+              pageX,
+              pageY,
+              onPress
             });
-            setTimeout(() => {
-                this.setState({
-                    hotspots,
-                });
-            }, 1);
-        });
-    }
-
-    onPress(idx) {
-        const { hotspots } = this.state;
-
-        hotspots[idx].onPress();
-        const newArr = hotspots.concat([]);
-
-        newArr.splice(idx, 1);
-
+          }
+        );
+      });
+      setTimeout(() => {
         this.setState({
-            hotspots: newArr,
+          hotspots
         });
+      }, 1);
+    });
+  }
+
+  onPress(idx) {
+    const { hotspots } = this.state;
+
+    hotspots[idx].onPress();
+    const newArr = hotspots.concat([]);
+
+    newArr.splice(idx, 1);
+
+    this.setState({
+      hotspots: newArr
+    });
+  }
+
+  render() {
+    const { hotspots } = this.state;
+    const { componentRefs, ...otherProps } = this.props;
+
+    if (!hotspots) {
+      return null;
     }
 
-    render() {
-        const { hotspots } = this.state;
-        const { componentRefs, ...otherProps } = this.props;
-
-        if (!hotspots) {
-            return null;
-        }
-
-        return hotspots.map(({ width, height, pageX, pageY }, idx) => {
-            return (
-                <Pulse
-                    key={idx}
-                    idx={idx}
-                    dimensions={{ width, height, pageX, pageY }}
-                    onPress={this.onPress}
-                    {...otherProps}
-                />
-            );
-        });
-    }
+    return hotspots.map(({ width, height, pageX, pageY }, idx) => {
+      return (
+        <Pulse
+          key={idx}
+          idx={idx}
+          dimensions={{ width, height, pageX, pageY }}
+          onPress={this.onPress}
+          {...otherProps}
+        />
+      );
+    });
+  }
 }
